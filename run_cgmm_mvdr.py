@@ -69,7 +69,7 @@ def read_multi_channel(wavs, tp):
   wav, _ = sf.read(str(wavs[0]), dtype='float32')
   wav_data = wav[b_idx: e_idx]
   wav_multi = np.zeros((len(wav_data), len(wavs)), dtype=np.float32)
-  wav_multi[:, 0] = wav
+  wav_multi[:, 0] = wav_data
 
   for i in range(1, len(wavs)):
     wav_multi[:, i] = sf.read(str(wavs[i]), dtype='float32')[0][b_idx:e_idx]
