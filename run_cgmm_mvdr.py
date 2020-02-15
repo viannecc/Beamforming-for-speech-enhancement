@@ -93,7 +93,6 @@ def __cmd():
   parser.add_argument("--array", help="指定麦克风, 如U06, 否则用outer arrays.")
   args = parser.parse_args()
 
-  logging.info(f"获取{args.task}标签json内容.")
   if args.task == "dev":
     sess_ids = ["S02", "S09"]
   else:
@@ -115,7 +114,8 @@ def __cmd():
 
     chunks = get_chunk_data(pool_args)
     logging.info(f"一共{len(chunks)}个chunks")
-    for chunk in chunks:
+    for i, chunk in enumerate(chunks, 1):
+      logging.info(f"处理第{i}个chunk.")
       if args.nj == 1:
         for items in chunk:
           enhance(*items)
