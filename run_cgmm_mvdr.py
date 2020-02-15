@@ -64,8 +64,8 @@ def get_wavs_tps(sess_ids, task, array=None):
 
 def read_multi_channel(wavs, tp):
   bt, et = tp
-  b_idx = int(bt * 16000) * 2
-  e_idx = int(et * 16000) * 2
+  b_idx = int(bt * 16000)
+  e_idx = int(et * 16000)
   wav, _ = sf.read(str(wavs[0]), dtype='float32')
   wav_data = wav[b_idx: e_idx]
   wav_multi = np.zeros((len(wav_data), len(wavs)), dtype=np.float32)
