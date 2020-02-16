@@ -27,14 +27,17 @@ def cgmm_mvdr(wav_multi, save_path):
   cgmm_beamformer = cgmm.complexGMM_mvdr(SAMPLING_FREQUENCY, FFT_LENGTH,
                                          FFT_SHIFT, NUMBER_EM_ITERATION,
                                          MIN_SEGMENT_DUR)
+  try:
+    complex_spectrum, R_x, R_n, noise_mask, speech_mask = cgmm_beamformer.get_spatial_correlation_matrix(
+      wav_multi)
 
-  complex_spectrum, R_x, R_n, noise_mask, speech_mask = cgmm_beamformer.get_spatial_correlation_matrix(
-    wav_multi)
+    beamformer, steering_vector = cgmm_beamformer.get_mvdr_beamformer(R_x, R_n)
 
-  beamformer, steering_vector = cgmm_beamformer.get_mvdr_beamformer(R_x, R_n)
-
-  enhanced_speech = cgmm_beamformer.apply_beamformer(beamformer,
-                                                     complex_spectrum)
+    enhanced_speech = cgmm_beamformer.apply_beamformer(beamformer,
+                                                       complex_spectrum)
+  except np.linalg.LinAlgError:
+    logging.info(f'{save_path.stem}异常.')
+    enhanced_speech = wav_multi[:, 0]
 
   sf.write(str(save_path),
            enhanced_speech / np.max(np.abs(enhanced_speech)) * 0.65,
@@ -60,6 +63,20 @@ def get_wavs_tps(sess_ids, task, array=None):
 
     sess_wavs_tps[sess_id] = (wavs, tps_list)
   return sess_wavs_tps
+
+
+def filter_finished(sess_wavs_tps, save_dir):
+  new_sess_wavs_tps = dict()
+  for sess_id, (wavs, tps_list) in sess_wavs_tps.items():
+    new_tps_list = list()
+    for bt, et in tps_list:
+      save_path = save_dir / f"{sess_id}-{bt:07d}-{int(et):07d}.wav"
+      if not save_path.exist():
+        new_tps_list.append((bt, et))
+      else:
+        logging.info(f"{save_path.stem}已存在.")
+    new_sess_wavs_tps[sess_id] = (wavs, new_tps_list)
+  return new_sess_wavs_tps
 
 
 def read_multi_channel(wavs, tp):
@@ -103,6 +120,9 @@ def __cmd():
 
   logging.info("获取各会话音频和分段的时间.")
   sess_wavs_tps = get_wavs_tps(sess_ids, args.task, args.array)
+
+  logging.info("过滤已经完成的部分.")
+  sess_wavs_tps = filter_finished(sess_wavs_tps, args.save_dir)
 
   args.save_dir.mkdir(parents=True, exist_ok=True)
   temp_dir = args.save_dir / "temp"
