@@ -79,7 +79,10 @@ def read_multi_channel(wavs, tp):
 def enhance(wavs, tp, save_dir):
   wav_multi = read_multi_channel(wavs, tp)
   sess_id = wavs[0].stem.split('_')[0]
-  save_path = save_dir / f"{sess_id}-{tp[0]:07d}-{tp[1]:07d}.wav"
+  if isinstance(tp[1], int):
+    save_path = save_dir / f"{sess_id}-{tp[0]:07d}-{tp[1]:07d}.wav"
+  elif isinstance(tp[1], float):
+    save_path = save_dir / f"{sess_id}-{tp[0]:07d}-{int(tp[1]):07d}.wav"
   cgmm_mvdr(wav_multi, save_path)
 
 
