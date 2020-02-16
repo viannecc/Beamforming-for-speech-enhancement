@@ -70,8 +70,8 @@ def filter_finished(sess_wavs_tps, save_dir):
   for sess_id, (wavs, tps_list) in sess_wavs_tps.items():
     new_tps_list = list()
     for bt, et in tps_list:
-      save_path = save_dir / f"{sess_id}-{bt:07d}-{int(et):07d}.wav"
-      if not save_path.exist():
+      save_path = save_dir / f"temp/{sess_id}-{bt:07d}-{int(et):07d}.wav"
+      if not save_path.exists():
         new_tps_list.append((bt, et))
       else:
         logging.info(f"{save_path.stem}已存在.")
